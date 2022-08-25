@@ -10,4 +10,4 @@ scrapy genspider PTTSpider ptt.cc
 scrapy crawl PttSpider
 
 #匯出CSV
-scrapy crawl ptt -o ptt.csv
+scrapy crawl PttSpider -o ptt.csv
