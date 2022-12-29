@@ -5,7 +5,7 @@ import PyPtt
 
 ptt_bot = PyPtt.API()
 try:
-    ptt_bot.login('ecloud01', '13579', False)
+    ptt_bot.login('帳號', 'pw', False)
     newest_index = ptt_bot.get_newest_index(PyPtt.NewIndex.BOARD, 'Gossiping')
 
     print(newest_index)
