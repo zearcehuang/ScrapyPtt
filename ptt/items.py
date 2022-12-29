@@ -7,6 +7,8 @@ import scrapy
 
 
 class PostItem(scrapy.Item):
+    Id = scrapy.Field() 		# Id
+    postId = scrapy.Field() 	# 貼文Id
     title = scrapy.Field() 		# 貼文標題
     author = scrapy.Field() 	# 貼文作者
     date = scrapy.Field() 		# 貼文日期
