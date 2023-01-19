@@ -3,18 +3,20 @@ from datetime import datetime
 import scrapy
 from scrapy.http import FormRequest
 from ptt.items import PostItem
+import uuid
 
 
 class PttspiderSpider(scrapy.Spider):
     name = 'PttSpider'
     allowed_domains = ['ptt.cc']  # 網域名稱
-    start_urls = ('https://www.ptt.cc/bbs/Gossiping/index.html', )  # 起始網址
+    # start_urls = ('https://www.ptt.cc/bbs/Gossiping/index11104.html', )  # 起始網址
+    start_urls = ('https://www.ptt.cc/bbs/Gossiping/index11095.html', )  # 起始網址
 
     _retries = 0
     MAX_RETRY = 100000  # 18歲問題的最大重試次數
 
     _pages = 0
-    MAX_PAGES = 2  # 最大翻頁次數
+    MAX_PAGES = 1  # 最大翻頁次數
 
     def parse(self, response):  # 這個函式包括18歲問題表單傳送、爬取每一頁的每個標題，並將各文章連結傳給parse_post函式
         if len(response.xpath('//div[@class="over18-notice"]')) > 0:   # 判斷是否進入18歲問題頁面
@@ -29,8 +31,8 @@ class PttspiderSpider(scrapy.Spider):
 
         else:
             self._pages += 1
+            print(f"Loop is : {self._pages}")
             for href in response.css('.r-ent > div.title > a::attr(href)'):  # 抓取每個文章的標題、連結
-
                 url = response.urljoin(href.extract())  # urljoin將相對位址轉為絕對位址
                 # 將每個內文的網址傳送給parse_post，進行內文等相關內容的爬取
                 yield scrapy.Request(url, callback=self.parse_post)
@@ -50,6 +52,7 @@ class PttspiderSpider(scrapy.Spider):
 
     def parse_post(self, response):  # 這個函式進行內文等相關資訊的爬取
         item = PostItem()
+        item['Id'] = str(uuid.uuid1())
         item['title'] = response.xpath(
             '//meta[@property="og:title"]/@content')[0].extract()
 
@@ -64,37 +67,51 @@ class PttspiderSpider(scrapy.Spider):
                 0].extract()
         item['date'] = datetime.strptime(datetime_str, '%a %b %d %H:%M:%S %Y')
 
-        item['content'] = response.xpath('//div[@id="main-content"]/text()')[
-            0].extract()
+        _parse_year = "2021"
+        print("date is", str(item['date']))
+        print(response.xpath('//div[@id="main-content"]/text()/a/@href'))
 
-        temp_ip = response.xpath(
-            "//span[starts-with(text(),'※ 發信站: 批踢踢實業坊')]/text()")[
-                0].extract()
-        temp_ip = temp_ip.strip("※ 發信站: 批踢踢實業坊(ptt.cc), 來自: ")
-        item['ip'] = temp_ip.strip("\n")
+        if datetime_str.count(_parse_year) > 0:
+            # item['content'] = response.xpath('//div[@id="main-content"]/text()')[
+            #     0].extract()
+            item['content'] = response.xpath(
+                '//div[@id="main-content"]/text()/a/@href')[0].extract()
 
-        comments = []
-        total_score = 0
-        for comment in response.xpath('//div[@class="push"]'):
-            push_tag = comment.css('span.push-tag::text')[0].extract()
-            push_user = comment.css('span.push-userid::text')[0].extract()
-            push_content = comment.css('span.push-content::text')[0].extract()
+            temp_ip = response.xpath(
+                "//span[starts-with(text(),'※ 發信站: 批踢踢實業坊')]/text()")[
+                    0].extract()
+            temp_ip = temp_ip.strip("※ 發信站: 批踢踢實業坊(ptt.cc), 來自: ")
+            item['ip'] = temp_ip.strip("\n")
 
-            if u"推" in push_tag:
-                score = 1
-            elif u"噓" in push_tag:
-                score = -1
-            else:
-                score = 0
+            comments = []
+            total_score = 0
+            # for comment in response.xpath('//div[@class="push"]'):
+            #     push_tag = comment.css('span.push-tag::text')[0].extract()
+            #     push_user = comment.css('span.push-userid::text')[0].extract()
+            #     push_ipdatetime = comment.css(
+            #         'span.push-ipdatetime::text')[0].extract()
+            #     push_content = comment.css(
+            #         'span.push-content::text')[0].extract()
 
-            total_score += score
+            #     if u"推" in push_tag:
+            #         score = 1
+            #     elif u"噓" in push_tag:
+            #         score = -1
+            #     else:
+            #         score = 0
 
-            comments.append({'user': push_user,
-                             'content': push_content,
-                             'score': score})
+            #     total_score += score
 
-        item['comments'] = comments
-        item['score'] = total_score
-        item['url'] = response.url
+            #     comments.append({
+            #         'Id': str(uuid.uuid1()),
+            #         'postId': item['Id'],
+            #         'user': push_user,
+            #         'content': push_content,
+            #         'score': score,
+            #         'ipdatetime': str(push_ipdatetime).strip()})
 
-        yield item
+            # item['comments'] = comments
+            # item['score'] = total_score
+            # item['url'] = response.url
+
+            yield item

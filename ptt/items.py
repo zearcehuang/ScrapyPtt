@@ -17,3 +17,4 @@ class PostItem(scrapy.Item):
     comments = scrapy.Field() 	# 回文內容
     score = scrapy.Field() 		# 貼文分數(獲得推文+1分; 獲得噓文-1分)
     url = scrapy.Field() 		# 貼文網址
+    ipdatetime = scrapy.Field() 	# 回文ip及時間

@@ -14,10 +14,10 @@ db_Name = config.get('DEFAULT', 'DB_NAME')
 db_Host = config.get('DEFAULT', 'DB_HOST')
 
 # 政黑
-ptt_apiurl = "https://www.pttbrain.com/ptt/board/22"
+ptt_apiurl = "https://www.pttbrain.com/ptt/board/8"
 headers = {"Content-Type": "application/json"}
-start_index = 303200
-end_index = 313200
+start_index = 955300
+end_index = 1360000
 # start_index = 0
 # end_index = 10
 get_data_count = 100
@@ -40,10 +40,8 @@ def print_ClassValue(classObject):
     print(', '.join("%s: %s" % item for item in attrs.items()))
 
 # 貼文
-
-
 def insert_post_content(get_data_count):
-    ptt_apiurl = f"https://pttbrain-api.herokuapp.com/api/ptt/board/22/articles?limit={get_data_count}&offset={i}"
+    ptt_apiurl = f"https://pttbrain-api.herokuapp.com/api/ptt/board/8/articles?limit={get_data_count}&offset={i}"
     response = requests.get(ptt_apiurl,  headers=headers)
     data = response.json()
     articles = data['data']
@@ -52,7 +50,7 @@ def insert_post_content(get_data_count):
         post = PttPost('', '', '', '', '', '', '', None, 0, 0, 0, None)
         post.Id = article["id"]
         print(post.Id)
-        post.source = 'HatePolitics'
+        post.source = 'Gossiping'
         post.title = article["title"]
         post.content = article["content"]
         post.author = article["author"]
@@ -72,7 +70,7 @@ def insert_post_content(get_data_count):
         else:
             datetime_str = article["updated_at"]
 
-        sql = "select * from dbo.pttpost where source=? and Id=?"
+        sql = "select * from dbo.pttpostgossing where source=? and Id=?"
         result = cursor.execute(sql, post.source, post.Id)
         if len(result.fetchall()) > 0:
             continue
@@ -80,7 +78,7 @@ def insert_post_content(get_data_count):
         if datetime_str is not None and post.postdatetime.count('2021') > 0:
             post.update_at = datetime_str
 
-            sql = "INSERT INTO dbo.pttpost([source],[Id],[title],[context],[author],[author_id],[url],[postdatetime],[num_like],[num_hate],[num_replies],[update_at]) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"
+            sql = "INSERT INTO dbo.pttpostgossing([source],[Id],[title],[context],[author],[author_id],[url],[postdatetime],[num_like],[num_hate],[num_replies],[update_at]) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"
 
             cursor.execute(sql, post.source, post.Id, post.title, post.content, post.author,
                            post.author_id, post.url, post.postdatetime, post.num_like,
@@ -113,10 +111,9 @@ def insert_comment_content(comments_count, postId):
             postComment.Comment_Datetime = comment['timestp']
 
         postComment.UserId = comment['user_id']
-        sql = "INSERT INTO dbo.pttpostcomment([Id],[postId],[content],[ip],[userid],[tagcomment],[comment_datetime]) VALUES(?,?,?,?,?,?,?)"
+        sql = "INSERT INTO dbo.pttpostcommentgossing([Id],[postId],[content],[ip],[userid],[tagcomment],[comment_datetime]) VALUES(?,?,?,?,?,?,?)"
         cursor.execute(
             sql, postComment.Id, postComment.PostId, postComment.content, postComment.IP, postComment.UserId, postComment.TagComment, postComment.Comment_Datetime)
-
 
 try:
     cnxn_str = ("Driver={SQL Server Native Client 11.0};"
@@ -124,6 +121,7 @@ try:
                 f"Database={db_Name};"
                 f"UID={db_UserName};"
                 f"PWD={db_Password};")
+
     cnxn = pyodbc.connect(cnxn_str)
     # Create a cursor from the connection
     cursor = cnxn.cursor()

@@ -1,15 +1,10 @@
 class PttPostComment:
     # 建構式
-    def __init__(self, source, Id, title, context, author, auth_id, url, postdatetime, num_like, num_hate, num_replies, update_at):
-        self.source = source 
+    def __init__(self, Id, PostId, content, IP, UserId, TagComment, Comment_Datetime):
         self.Id = Id
-        self.title = title
-        self.context = context
-        self.author = author
-        self.auth_id = auth_id
-        self.url = url
-        self.postdatetime = postdatetime
-        self.num_like = num_like
-        self.num_hate = num_hate
-        self.num_replies = num_replies
-        self.update_at = update_at
+        self.PostId = PostId
+        self.content = content
+        self.IP = IP
+        self.UserId = UserId
+        self.TagComment = TagComment
+        self.Comment_Datetime = Comment_Datetime
