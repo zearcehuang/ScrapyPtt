@@ -16,8 +16,8 @@ db_Host = config.get('DEFAULT', 'DB_HOST')
 # 政黑
 ptt_apiurl = "https://www.pttbrain.com/ptt/board/8"
 headers = {"Content-Type": "application/json"}
-start_index = 955300
-end_index = 1360000
+start_index = 1319600
+end_index = 1380000
 # start_index = 0
 # end_index = 10
 get_data_count = 100
